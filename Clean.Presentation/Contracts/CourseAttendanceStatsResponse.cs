@@ -1,4 +1,4 @@
-namespace WebArchitecturesExamples.ThreeLayered.Models
+namespace WebArchitecturesExamples.Clean.Models
 {
     public class CourseAttendanceStatsResponse
     {

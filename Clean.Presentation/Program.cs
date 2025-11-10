@@ -1,15 +1,24 @@
+using MediatR;
+using WebArchitecturesExamples.Clean.Application.Commands;
+using WebArchitecturesExamples.Clean.Application.Interfaces;
+using WebArchitecturesExamples.Clean.Presentation.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssemblyContaining<StartAttendanceSessionCommand>();
+});
+
+builder.Services.AddSingleton<IAttendanceRepository, InMemoryAttendanceRepository>();
+builder.Services.AddSingleton<IStudentRepository, InMemoryStudentRepository>();
+builder.Services.AddSingleton<IStudentNotifier, InMemoryStudentNotifier>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

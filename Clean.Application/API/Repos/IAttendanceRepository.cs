@@ -1,9 +1,9 @@
-namespace ThreeLayered.Application.Interfaces
+namespace WebArchitecturesExamples.Clean.Application.Interfaces
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using ThreeLayered.Application.Models;
+    using Domain;
 
     public interface IAttendanceRepository
     {

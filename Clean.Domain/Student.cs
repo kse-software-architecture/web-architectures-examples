@@ -1,4 +1,4 @@
-namespace ThreeLayered.Application.Models
+namespace WebArchitecturesExamples.Clean.Domain
 {
     public class Student
     {

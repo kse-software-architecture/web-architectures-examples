@@ -1,110 +1,106 @@
+namespace WebArchitecturesExamples.Clean.Presentation.Controllers;
 
+using System.Threading.Tasks;
+using Domain;
+using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ThreeLayered.Application.Interfaces;
-using ThreeLayered.Application.Models;
+using Models;
+using Application.Commands;
 
-namespace WebArchitecturesExamples.ThreeLayered.Controllers
+[ApiController, Route("api/clean/attendance")]
+public class AttendanceController(IMediator mediator) : ControllerBase
 {
-    using Models;
-
-    [ApiController]
-    [Route("api/attendance")]
-    public class AttendanceController(IAttendanceService attendanceService, IStudentService studentService)
-        : ControllerBase
+    [HttpPost("start")]
+    public async Task<ActionResult<StartSessionResponse>> StartSession([FromBody] StartSessionRequest request)
     {
+        var command = new StartAttendanceSessionCommand(request.CourseId, request.DurationMinutes);
+        var response = await mediator.Send(command);
 
-        [HttpPost("start")]
-        public async Task<ActionResult<StartSessionResponse>> StartSession([FromBody] StartSessionRequest request)
+        if (response.Result.IsError)
         {
-            if (request.DurationMinutes <= 0)
+            return Problem(
+                title: "Unable to start session",
+                detail: response.Result.GetError().ToString(),
+                statusCode: StatusCodes.Status400BadRequest);
+        }
+
+        var value = response.Result.GetValue()!;
+        var dto = new StartSessionResponse
+        {
+            SessionId = value.SessionId,
+            Code = value.Code,
+            StartTime = value.StartTime,
+            EndTime = value.EndTime,
+        };
+
+        return CreatedAtAction(nameof(GetSummary), new { sessionId = value.SessionId }, dto);
+    }
+
+    [HttpPost("mark")]
+    public async Task<ActionResult<MarkAttendanceResponse>> MarkAttendance([FromBody] MarkAttendanceRequest request)
+    {
+        var command = new MarkAttendanceCommand
+        {
+            SessionId = request.SessionId,
+            StudentId = request.StudentId
+        };
+        var response = await mediator.Send(command);
+
+        if (response.Result.IsError)
+        {
+            var error = response.Result.GetError();
+            var status = error switch
             {
-                return BadRequest("Duration must be positive.");
-            }
-
-            var session = await attendanceService.StartSessionAsync(request.CourseId, request.DurationMinutes);
-
-            var students = await studentService.GetStudentsForCourse(request.CourseId);
-            var participantCount = students.Count;
-            Response.Headers.Append("X-Estimated-Participants", participantCount.ToString());
-
-            // It is easy to leak business logic into controllers, here is small example
-            var shouldNotify = participantCount > 0 && session.EndTime.Subtract(session.StartTime) > TimeSpan.FromMinutes(10);
-            if (shouldNotify)
-            {
-                await attendanceService.NotifyStudents(request.CourseId, students, session);
-            }
-
-            var response = new StartSessionResponse
-            {
-                SessionId = session.Id,
-                Code = session.Code,
-                StartTime = session.StartTime,
-                EndTime = session.EndTime
+                MarkAttendanceCommand.Error.SessionNotFound => StatusCodes.Status404NotFound,
+                _ => StatusCodes.Status400BadRequest
             };
 
-            return CreatedAtAction(nameof(GetSummary), new { sessionId = session.Id }, response);
+            return Problem(
+                title: "Unable to mark attendance",
+                detail: error.ToString(),
+                statusCode: status);
         }
 
-        [HttpPost("mark")]
-        public async Task<ActionResult<MarkAttendanceResponse>> MarkAttendance([FromBody] MarkAttendanceRequest request)
+        var value = response.Result.GetValue()!;
+
+        return Ok(new MarkAttendanceResponse
         {
-            try
-            {
-                var record = await attendanceService.MarkAttendanceAsync(request.SessionId, request.StudentId);
-                var response = new MarkAttendanceResponse
-                {
-                    SessionId = request.SessionId,
-                    StudentId = request.StudentId,
-                    Status = record.Status.ToString(),
-                    Timestamp = record.Timestamp
-                };
+            SessionId = value.SessionId,
+            StudentId = value.StudentId,
+            Status = value.Status.ToString(),
+            Timestamp = value.Timestamp
+        });
+    }
 
-                return Ok(response);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+    [HttpGet("{sessionId:int}/summary")]
+    public async Task<ActionResult<SessionSummary>> GetSummary(int sessionId)
+    {
+        var query = new GetSessionSummaryQuery(sessionId);
+        var response = await mediator.Send(query);
 
-        [HttpGet("{sessionId:int}/summary")]
-        public async Task<ActionResult<SessionSummary>> GetSummary(int sessionId)
+        if (response.Result.IsError)
         {
-            try
-            {
-                var summary = await attendanceService.GetSummaryAsync(sessionId);
-                return Ok(summary);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            return NotFound(response.Result.GetError().ToString());
         }
 
-        [HttpGet("{courseId:int}/stats")]
-        public async Task<ActionResult<CourseAttendanceStatsResponse>> GetCourseStats(int courseId)
+        return Ok(response.Result.GetValue());
+    }
+
+    [HttpGet("{courseId:int}/stats")]
+    public async Task<ActionResult<CourseAttendanceStats>> GetCourseStatistics(int courseId)
+    {
+        var query = new GetCourseStatisticsQuery()
         {
-            var stats = await studentService.CalculateAttendanceRates(courseId);
+            CourseId = courseId
+        };
+        var response = await mediator.Send(query);
 
-            var response = new CourseAttendanceStatsResponse
-            {
-                CourseId = stats.CourseId,
-                TotalSessions = stats.TotalSessions,
-                Students = stats.Students
-                    .Select(s => new CourseAttendanceStudentResponse
-                    {
-                        StudentId = s.StudentId,
-                        StudentName = s.StudentName,
-                        PresentCount = s.PresentCount,
-                        LateCount = s.LateCount,
-                        TotalSessions = s.TotalSessions,
-                        AttendanceRate = s.AttendanceRate
-                    })
-                    .ToList()
-            };
-
-            return Ok(response);
+        if (response.Result.IsError)
+        {
+            return NotFound(response.Result.GetError().ToString());
         }
+
+        return Ok(response.Result.GetValue());
     }
 }
-
