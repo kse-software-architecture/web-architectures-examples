@@ -11,4 +11,9 @@
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\ThreeLayered.Application\ThreeLayered.Application.csproj" />
+        <ProjectReference Include="..\ThreeLayered.DataLayer\ThreeLayered.DataLayer.csproj" />
+    </ItemGroup>
+
 </Project>
