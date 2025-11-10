@@ -9,7 +9,7 @@ namespace ThreeLayered.DataLayer.Repositories
     public class StudentRepository(AppDbContext context) : IStudentRepository
     {
 
-        public async Task<Student?> GetById(Guid studentId)
+        public async Task<Student?> GetById(int studentId)
         {
             var record = await context.Students.FirstOrDefaultAsync(s => s.Id == studentId);
             if (record == null)
@@ -21,7 +21,7 @@ namespace ThreeLayered.DataLayer.Repositories
             return student;
         }
 
-        public async Task<List<Student>> GetByCourse(Guid courseId)
+        public async Task<List<Student>> GetByCourse(int courseId)
         {
             var records = await context.Students
                 .Where(s => s.CourseId == courseId)

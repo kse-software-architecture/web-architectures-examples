@@ -21,6 +21,7 @@ namespace ThreeLayered.DataLayer.Data
             modelBuilder.Entity<AttendanceSession>(entity =>
             {
                 entity.HasKey(s => s.Id);
+                entity.Property(s => s.Id).ValueGeneratedOnAdd();
                 entity.Property(s => s.Code)
                     .IsRequired()
                     .HasMaxLength(6);
@@ -28,7 +29,7 @@ namespace ThreeLayered.DataLayer.Data
                 entity.OwnsMany(s => s.Records, builder =>
                 {
                     builder.WithOwner().HasForeignKey("AttendanceSessionId");
-                    builder.Property(record => record.Id).ValueGeneratedNever();
+                    builder.Property(record => record.Id).ValueGeneratedOnAdd();
                     builder.HasKey(record => record.Id);
                     builder.Property(record => record.Timestamp).IsRequired();
                     builder.Property(record => record.Status).IsRequired();
@@ -39,6 +40,7 @@ namespace ThreeLayered.DataLayer.Data
             modelBuilder.Entity<StudentRecord>(entity =>
             {
                 entity.HasKey(s => s.Id);
+                entity.Property(s => s.Id).ValueGeneratedOnAdd();
                 entity.Property(s => s.Name)
                     .IsRequired()
                     .HasMaxLength(200);

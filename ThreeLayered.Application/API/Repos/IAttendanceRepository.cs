@@ -8,8 +8,8 @@ namespace ThreeLayered.Application.Interfaces
     public interface IAttendanceRepository
     {
         Task Add(AttendanceSession session);
-        Task<AttendanceSession?> GetById(Guid sessionId);
-        Task<List<AttendanceSession>> GetByCourse(Guid courseId);
+        Task<AttendanceSession?> GetById(int sessionId);
+        Task<List<AttendanceSession>> GetByCourse(int courseId);
         Task Save();
     }
 }

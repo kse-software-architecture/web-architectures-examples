@@ -11,19 +11,19 @@ namespace ThreeLayered.Application.Services
         : IStudentService
     {
 
-        public async Task<Student?> GetStudent(Guid studentId)
+        public async Task<Student?> GetStudent(int studentId)
         {
             var student = await studentRepository.GetById(studentId);
             return student;
         }
 
-        public async Task<IReadOnlyList<Student>> GetStudentsForCourse(Guid courseId)
+        public async Task<IReadOnlyList<Student>> GetStudentsForCourse(int courseId)
         {
             var students = await studentRepository.GetByCourse(courseId);
             return students;
         }
 
-        public async Task<CourseAttendanceStats> CalculateAttendanceRates(Guid courseId)
+        public async Task<CourseAttendanceStats> CalculateAttendanceRates(int courseId)
         {
             var students = await studentRepository.GetByCourse(courseId);
             var sessions = await attendanceRepository.GetByCourse(courseId);

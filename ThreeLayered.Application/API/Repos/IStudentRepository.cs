@@ -7,8 +7,8 @@ namespace ThreeLayered.Application.Interfaces
 
     public interface IStudentRepository
     {
-        Task<Student?> GetById(Guid studentId);
-        Task<List<Student>> GetByCourse(Guid courseId);
+        Task<Student?> GetById(int studentId);
+        Task<List<Student>> GetByCourse(int courseId);
     }
 }
 

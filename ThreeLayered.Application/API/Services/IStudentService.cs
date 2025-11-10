@@ -1,15 +1,14 @@
 namespace ThreeLayered.Application.Interfaces
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Models;
+    using ThreeLayered.Application.Models;
 
     public interface IStudentService
     {
-        Task<Student?> GetStudent(Guid studentId);
-        Task<IReadOnlyList<Student>> GetStudentsForCourse(Guid courseId);
-        Task<CourseAttendanceStats> CalculateAttendanceRates(Guid courseId);
+        Task<Student?> GetStudent(int studentId);
+        Task<IReadOnlyList<Student>> GetStudentsForCourse(int courseId);
+        Task<CourseAttendanceStats> CalculateAttendanceRates(int courseId);
     }
 }
 

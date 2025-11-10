@@ -1,13 +1,12 @@
 namespace ThreeLayered.DataLayer.Repositories
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.EntityFrameworkCore;
-    using Application.Interfaces;
-    using Application.Models;
-    using Data;
+    using ThreeLayered.Application.Interfaces;
+    using ThreeLayered.Application.Models;
+    using ThreeLayered.DataLayer.Data;
 
     public class AttendanceRepository(AppDbContext context) : IAttendanceRepository
     {
@@ -17,7 +16,7 @@ namespace ThreeLayered.DataLayer.Repositories
             await context.AttendanceSessions.AddAsync(session);
         }
 
-        public async Task<AttendanceSession?> GetById(Guid sessionId)
+        public async Task<AttendanceSession?> GetById(int sessionId)
         {
             var session = await context.AttendanceSessions
                 .Include(s => s.Records)
@@ -26,7 +25,7 @@ namespace ThreeLayered.DataLayer.Repositories
             return session;
         }
 
-        public async Task<List<AttendanceSession>> GetByCourse(Guid courseId)
+        public async Task<List<AttendanceSession>> GetByCourse(int courseId)
         {
             var sessions = await context.AttendanceSessions
                 .Include(s => s.Records)

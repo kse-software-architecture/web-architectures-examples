@@ -11,8 +11,10 @@ namespace ThreeLayered.Application.Services
     public class AttendanceService(IAttendanceRepository attendanceRepository, ILogger<AttendanceService> logger)
         : IAttendanceService
     {
+        private static readonly char[] CodeCharacters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789".ToCharArray();
+        private readonly Random _random = new Random();
 
-        public async Task<AttendanceSession> StartSessionAsync(Guid courseId, int durationMinutes)
+        public async Task<AttendanceSession> StartSessionAsync(int courseId, int durationMinutes)
         {
             var now = DateTime.UtcNow;
             var session = new AttendanceSession
@@ -29,7 +31,7 @@ namespace ThreeLayered.Application.Services
             return session;
         }
 
-        public async Task<AttendanceEntry> MarkAttendanceAsync(Guid sessionId, Guid studentId)
+        public async Task<AttendanceEntry> MarkAttendanceAsync(int sessionId, int studentId)
         {
             var session = await attendanceRepository.GetById(sessionId);
             if (session == null)
@@ -69,7 +71,7 @@ namespace ThreeLayered.Application.Services
             return record;
         }
 
-        public async Task<SessionSummary> GetSummaryAsync(Guid sessionId)
+        public async Task<SessionSummary> GetSummaryAsync(int sessionId)
         {
             var session = await attendanceRepository.GetById(sessionId);
             if (session == null)
@@ -88,13 +90,13 @@ namespace ThreeLayered.Application.Services
             };
         }
 
-        public async Task<IReadOnlyList<AttendanceSession>> GetSessionsByCourse(Guid courseId)
+        public async Task<IReadOnlyList<AttendanceSession>> GetSessionsByCourse(int courseId)
         {
             var sessions = await attendanceRepository.GetByCourse(courseId);
             return sessions;
         }
 
-        public async Task NotifyStudents(Guid courseId, IEnumerable<Student> students, AttendanceSession session)
+        public async Task NotifyStudents(int courseId, IEnumerable<Student> students, AttendanceSession session)
         {
             var notifications = new List<Task>();
 
@@ -106,7 +108,7 @@ namespace ThreeLayered.Application.Services
             await Task.WhenAll(notifications);
         }
 
-        private async Task SendNotificationAsync(Guid courseId, Student student, AttendanceSession session)
+        private async Task SendNotificationAsync(int courseId, Student student, AttendanceSession session)
         {
             await Task.Delay(50);
             logger.LogInformation("Notified {Student} for course {Course} with code {Code}.", student.Name, courseId, session.Code);
@@ -114,7 +116,14 @@ namespace ThreeLayered.Application.Services
 
         private string GenerateCode()
         {
-            return Guid.NewGuid().ToString();
+            var buffer = new char[6];
+            for (var i = 0; i < buffer.Length; i++)
+            {
+                var index = _random.Next(CodeCharacters.Length);
+                buffer[i] = CodeCharacters[index];
+            }
+
+            return new string(buffer);
         }
     }
 }
