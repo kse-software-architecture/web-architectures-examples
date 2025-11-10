@@ -14,8 +14,11 @@ public class AttendanceController(IMediator mediator) : ControllerBase
     [HttpPost("start")]
     public async Task<ActionResult<StartSessionResponse>> StartSession([FromBody] StartSessionRequest request)
     {
-        var command = new StartAttendanceSessionCommand(request.CourseId, request.DurationMinutes);
-        var response = await mediator.Send(command);
+        var response = await mediator.Send(new StartAttendanceSessionCommand
+        {
+            CourseId = request.CourseId,
+            DurationMinutes = request.DurationMinutes
+        });
 
         if (response.Result.IsError)
         {
@@ -26,33 +29,31 @@ public class AttendanceController(IMediator mediator) : ControllerBase
         }
 
         var value = response.Result.GetValue()!;
-        var dto = new StartSessionResponse
+
+        return CreatedAtAction(nameof(GetSummary), new { sessionId = value.SessionId }, new StartSessionResponse
         {
             SessionId = value.SessionId,
             Code = value.Code,
             StartTime = value.StartTime,
             EndTime = value.EndTime,
-        };
-
-        return CreatedAtAction(nameof(GetSummary), new { sessionId = value.SessionId }, dto);
+        });
     }
 
     [HttpPost("mark")]
     public async Task<ActionResult<MarkAttendanceResponse>> MarkAttendance([FromBody] MarkAttendanceRequest request)
     {
-        var command = new MarkAttendanceCommand
+        var response = await mediator.Send(new MarkAttendanceCommand
         {
             SessionId = request.SessionId,
             StudentId = request.StudentId
-        };
-        var response = await mediator.Send(command);
+        });
 
         if (response.Result.IsError)
         {
             var error = response.Result.GetError();
             var status = error switch
             {
-                MarkAttendanceCommand.Error.SessionNotFound => StatusCodes.Status404NotFound,
+                AttendanceError.SessionNotFound => StatusCodes.Status404NotFound,
                 _ => StatusCodes.Status400BadRequest
             };
 
@@ -76,8 +77,10 @@ public class AttendanceController(IMediator mediator) : ControllerBase
     [HttpGet("{sessionId:int}/summary")]
     public async Task<ActionResult<SessionSummary>> GetSummary(int sessionId)
     {
-        var query = new GetSessionSummaryQuery(sessionId);
-        var response = await mediator.Send(query);
+        var response = await mediator.Send(new GetSessionSummaryQuery
+        {
+            SessionId = sessionId
+        });
 
         if (response.Result.IsError)
         {
@@ -90,11 +93,10 @@ public class AttendanceController(IMediator mediator) : ControllerBase
     [HttpGet("{courseId:int}/stats")]
     public async Task<ActionResult<CourseAttendanceStats>> GetCourseStatistics(int courseId)
     {
-        var query = new GetCourseStatisticsQuery()
+        var response = await mediator.Send(new GetCourseStatisticsQuery
         {
             CourseId = courseId
-        };
-        var response = await mediator.Send(query);
+        });
 
         if (response.Result.IsError)
         {

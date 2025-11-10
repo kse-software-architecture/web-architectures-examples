@@ -8,9 +8,13 @@ using Interfaces;
 using MediatR;
 using Utils;
 
-public record StartAttendanceSessionCommand(int CourseId, int DurationMinutes)
+public class StartAttendanceSessionCommand
     : IRequest<StartAttendanceSessionCommand.Response>
 {
+    public int CourseId { get; init; } 
+
+    public int DurationMinutes { get; init; } 
+    
     public enum Error
     {
         InvalidDuration
@@ -62,7 +66,7 @@ public class StartAttendanceSessionCommandHandler : IRequestHandler<StartAttenda
         await attendanceRepository.Save();
 
         var students = await studentRepository.GetByCourse(request.CourseId);
-        await studentNotifier.NotifyAsync(request.CourseId, students, session, cancellationToken);
+        await studentNotifier.NotifyAsync(request.CourseId, students, session);
 
         var result = new StartAttendanceSessionCommand.Result(
             session.Id,

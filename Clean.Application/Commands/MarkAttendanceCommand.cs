@@ -16,18 +16,18 @@ public record MarkAttendanceCommand
 
     public int StudentId { get; init; } 
     
-    public enum Error
-    {
-        SessionNotFound,
-        SessionClosed
-    }
-
+    
     public record Result(int SessionId, int StudentId, AttendanceStatus Status, DateTime Timestamp);
 
-    public class Response : ResultResponse<Result, Error, Response>
+    public class Response : ResultResponse<Result, AttendanceError, Response>
     {
     }
+}
 
+public enum AttendanceError
+{
+    SessionNotFound,
+    SessionClosed
 }
 
 public class MarkAttendanceCommandHandler(IAttendanceRepository attendanceRepository)
@@ -40,13 +40,13 @@ public class MarkAttendanceCommandHandler(IAttendanceRepository attendanceReposi
         var session = await attendanceRepository.GetById(request.SessionId);
         if (session == null)
         {
-            return MarkAttendanceCommand.Response.Error(MarkAttendanceCommand.Error.SessionNotFound);
+            return MarkAttendanceCommand.Response.Error(AttendanceError.SessionNotFound);
         }
 
         var now = DateTime.UtcNow;
         if (now > session.EndTime)
         {
-            return MarkAttendanceCommand.Response.Error(MarkAttendanceCommand.Error.SessionClosed);
+            return MarkAttendanceCommand.Response.Error(AttendanceError.SessionClosed);
         }
 
         var existing = session.Records.FirstOrDefault(r => r.StudentId == request.StudentId);

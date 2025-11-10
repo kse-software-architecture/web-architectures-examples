@@ -8,9 +8,11 @@ using Interfaces;
 using Domain;
 using Utils;
 
-public record GetSessionSummaryQuery(int SessionId)
+public class GetSessionSummaryQuery
     : IRequest<GetSessionSummaryQuery.Response>
 {
+    public int SessionId { get; init; } 
+
     public enum Error
     {
         SessionNotFound

@@ -12,12 +12,23 @@ namespace WebArchitecturesExamples.Clean.Domain
 
     public class StudentAttendanceStats
     {
-        public int StudentId { get; set; }
-        public string StudentName { get; set; } = string.Empty;
-        public int PresentCount { get; set; }
-        public int LateCount { get; set; }
-        public int TotalSessions { get; set; }
-        public double AttendanceRate { get; set; }
+        public StudentAttendanceStats(List<AttendanceSession> sessions, Student student)
+        {
+            StudentId = student.Id;
+            StudentName = student.Name;
+                
+            PresentCount = sessions.Sum(s => s.Records.Count(r => r.StudentId == student.Id && r.Status == AttendanceStatus.Present));
+            LateCount = sessions.Sum(s => s.Records.Count(r => r.StudentId == student.Id && r.Status == AttendanceStatus.Late));
+            TotalSessions = PresentCount + LateCount;
+            AttendanceRate = sessions.Count == 0 ? 0 : Math.Round(TotalSessions / (double)sessions.Count, 2);
+        }
+
+        public int StudentId { get;  }
+        public string StudentName { get;  } 
+        public int PresentCount { get; }
+        public int LateCount { get;  }
+        public int TotalSessions { get;  }
+        public double AttendanceRate { get;  }
     }
 }
 

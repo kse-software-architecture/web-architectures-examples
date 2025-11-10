@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 public class InMemoryStudentNotifier(ILogger<InMemoryStudentNotifier> logger) : IStudentNotifier
 {
 
-    public async Task NotifyAsync(int courseId, IReadOnlyList<Student> students, AttendanceSession session, CancellationToken cancellationToken)
+    public async Task NotifyAsync(int courseId, IReadOnlyList<Student> students, AttendanceSession session)
     {
         if (students.Count == 0)
         {
@@ -19,8 +19,7 @@ public class InMemoryStudentNotifier(ILogger<InMemoryStudentNotifier> logger) : 
 
         foreach (var student in students)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            await Task.Delay(10, cancellationToken);
+            await Task.Delay(10);
             logger.LogInformation("Notified {Student} for course {Course} with code {Code}", student.Name, courseId, session.Code);
         }
     }

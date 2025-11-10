@@ -48,20 +48,7 @@ public class GetCourseStatisticsQueryHandler(
 
         foreach (var student in students)
         {
-            var present = sessions.Sum(s => s.Records.Count(r => r.StudentId == student.Id && r.Status == AttendanceStatus.Present));
-            var late = sessions.Sum(s => s.Records.Count(r => r.StudentId == student.Id && r.Status == AttendanceStatus.Late));
-            var totalAttended = present + late;
-            var rate = sessions.Count == 0 ? 0 : Math.Round(totalAttended / (double)sessions.Count, 2);
-
-            stats.Students.Add(new StudentAttendanceStats
-            {
-                StudentId = student.Id,
-                StudentName = student.Name,
-                PresentCount = present,
-                LateCount = late,
-                TotalSessions = sessions.Count,
-                AttendanceRate = rate
-            });
+            stats.Students.Add(new StudentAttendanceStats(sessions, student));
         }
 
         return GetCourseStatisticsQuery.Response.Ok(stats);

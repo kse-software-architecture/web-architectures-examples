@@ -7,6 +7,6 @@ using Domain;
 
 public interface IStudentNotifier
 {
-    Task NotifyAsync(int courseId, IReadOnlyList<Student> students, AttendanceSession session, CancellationToken cancellationToken);
+    Task NotifyAsync(int courseId, IReadOnlyList<Student> students, AttendanceSession session);
 }
 
