@@ -63,7 +63,6 @@ public class StartAttendanceSessionCommandHandler : IRequestHandler<StartAttenda
         };
 
         await attendanceRepository.Add(session);
-        await attendanceRepository.Save();
 
         var students = await studentRepository.GetByCourse(request.CourseId);
         await studentNotifier.NotifyAsync(request.CourseId, students, session);

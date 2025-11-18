@@ -72,7 +72,7 @@ public class MarkAttendanceCommandHandler(IAttendanceRepository attendanceReposi
             existing = record;
         }
 
-        await attendanceRepository.Save();
+        await attendanceRepository.Update(session);
 
         return MarkAttendanceCommand.Response.Ok(new MarkAttendanceCommand.Result(session.Id, request.StudentId,
             existing.Status, existing.Timestamp));

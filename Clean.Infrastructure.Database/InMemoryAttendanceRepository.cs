@@ -36,9 +36,11 @@ public class InMemoryAttendanceRepository : IAttendanceRepository
         return Task.FromResult(result);
     }
 
-    public Task Save()
+    public Task Update(AttendanceSession session)
     {
+        sessions[session.Id] = session;
         return Task.CompletedTask;
     }
+    
 }
 

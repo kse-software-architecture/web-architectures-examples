@@ -10,7 +10,7 @@ namespace WebArchitecturesExamples.Clean.Application.Interfaces
         Task Add(AttendanceSession session);
         Task<AttendanceSession?> GetById(int sessionId);
         Task<List<AttendanceSession>> GetByCourse(int courseId);
-        Task Save();
+        Task Update(AttendanceSession session);
     }
 }
 
